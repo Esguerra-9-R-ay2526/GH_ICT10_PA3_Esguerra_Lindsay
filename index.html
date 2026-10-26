@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who made that game?</title>
+ 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+ 
+    <!-- PyScript -->
+    <link rel="stylesheet" href="https://pyscript.net/releases/2026.7.3/core.css">
+    <script type="module" src="https://pyscript.net/releases/2026.7.3/core.js"></script>
+ 
+    <style>
+        :root {
+            --night: #1c1b2e;
+            --shell: #9a98ad;
+            --shell-dark: #7c7a91;
+            --label: #eef3f4;
+            --ink: #23223a;
+            --signal: #ffb800;
+            --hit: #ff4f6d;
+            --focus: #4fd1ff;
+        }
+ 
+        * { box-sizing: border-box; }
+ 
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 2rem 1rem;
+            background: var(--night);
+            color: var(--ink);
+            font-family: "Outfit", system-ui, sans-serif;
+        }
+ 
+        /* The cartridge: the one memorable element */
+        .cartridge {
+            width: min(30rem, 100%);
+            background: var(--shell);
+            border-radius: 1.25rem 1.25rem 0.5rem 0.5rem;
+            padding: 1.5rem 1.5rem 0;
+            box-shadow: inset 0 -0.5rem 0 var(--shell-dark), 0 1.5rem 0 -0.5rem #000;
+            position: relative;
+        }
+ 
+        /* Ridges at the top of the cartridge */
+        .cartridge::before {
+            content: "";
+            position: absolute;
+            inset: 0.6rem 1.5rem auto;
+            height: 0.5rem;
+            background: repeating-linear-gradient(90deg, var(--shell-dark) 0 0.4rem, transparent 0.4rem 0.8rem);
+            border-radius: 0.25rem;
+        }
+ 
+        .label {
+            margin-top: 0.75rem;
+            background: var(--label);
+            border-radius: 0.5rem;
+            padding: 1.5rem 1.25rem 1.75rem;
+        }
+ 
+        h1 {
+            margin: 0 0 1.25rem;
+            font-family: "Silkscreen", monospace;
+            font-weight: 700;
+            font-size: clamp(1.5rem, 6vw, 2rem);
+            line-height: 1.1;
+        }
+ 
+        label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-weight: 500;
+        }
+ 
+        .search {
+            display: flex;
+            gap: 0.5rem;
+        }
+ 
+        input[type="text"] {
+            flex: 1;
+            min-width: 0;
+            padding: 0.75rem 0.9rem;
+            font: inherit;
+            color: var(--ink);
+            background: #fff;
+            border: 2px solid var(--ink);
+            border-radius: 0.4rem;
+        }
+ 
+        input[type="button"] {
+            padding: 0.75rem 1.1rem;
+            font-family: "Silkscreen", monospace;
+            font-size: 1rem;
+            color: var(--ink);
+            background: var(--signal);
+            border: 2px solid var(--ink);
+            border-radius: 0.4rem;
+            box-shadow: 0 0.25rem 0 var(--ink);
+            cursor: pointer;
+        }
+ 
+        input[type="button"]:active {
+            transform: translateY(0.25rem);
+            box-shadow: none;
+        }
+ 
+        input:focus-visible {
+            outline: 3px solid var(--focus);
+            outline-offset: 2px;
+        }
+ 
+        /* Result area: filled by main.py */
+        #result {
+            margin-top: 1.25rem;
+            max-height: 22rem;
+            overflow-y: auto;
+            padding: 0.9rem 1rem;
+            border-left: 0.35rem solid var(--ink);
+            background: #dfe7e9;
+            border-radius: 0 0.4rem 0.4rem 0;
+        }
+ 
+        #result:empty::before {
+            content: "Type a game above to see who made it.";
+            color: #55546e;
+        }
+ 
+        /* Each display() call in main.py adds one div */
+        #result > div {
+            padding: 0.35rem 0;
+            font-family: ui-monospace, "SF Mono", Consolas, monospace;
+            font-size: 0.85rem;
+            overflow-wrap: anywhere;
+        }
+ 
+        #result > div + div { border-top: 1px dashed #aab4b8; }
+ 
+        #result .game  { font-family: "Silkscreen", monospace; font-size: 1.1rem; }
+        #result .maker { font-family: "Outfit", system-ui, sans-serif; font-size: 1.05rem; margin-top: 0.25rem; }
+        #result .note  { font-family: "Outfit", system-ui, sans-serif; font-size: 0.8rem; color: #55546e; }
+        #result .miss  { color: #b3243f; }
+ 
+        /* Cartridge pins */
+        .pins {
+            height: 1.75rem;
+            margin: 1.25rem 1rem 0;
+            background: repeating-linear-gradient(90deg, #d9a441 0 0.5rem, transparent 0.5rem 0.75rem);
+            border-radius: 0.25rem 0.25rem 0 0;
+        }
+ 
+        @media (prefers-reduced-motion: reduce) {
+            input[type="button"]:active { transform: none; }
+        }
+    </style>
+</head>
+<body>
+    <main class="cartridge">
+        <div class="label">
+            <h1>Who made that game?</h1>
+ 
+            <label for="dictionary">Your favorite game</label>
+            <div class="search">
+                <input type="text" id="dictionary" placeholder="e.g. Tetris" autocomplete="off">
+                <input type="button" py-click="game_details" value="Search">
+            </div>
+ 
+            <div id="result" aria-live="polite"></div>
+        </div>
+        <div class="pins"></div>
+    </main>
+ 
+    <script type="py" src="main.py"></script>
+</body>
+</html>
